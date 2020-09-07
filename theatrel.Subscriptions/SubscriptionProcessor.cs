@@ -32,17 +32,18 @@ namespace theatrel.Subscriptions
             await using var dbContext = _dbService.GetDbContext();
 
             Trace.TraceInformation("Process subscriptions started");
-            PlaybillChangeEntity[] changes = dbContext.PerformanceChanges.AsNoTracking()
+            PlaybillChangeEntity[] changes = dbContext.PerformanceChanges
                 .Include(c => c.PlaybillEntity)
                     .ThenInclude(p => p.Performance)
-                    .ThenInclude(p => p.Type)
+                        .ThenInclude(p => p.Type)
                 .Include(c => c.PlaybillEntity)
                     .ThenInclude(p => p.Performance)
-                    .ThenInclude(p => p.Location)
+                        .ThenInclude(p => p.Location)
+                .AsNoTracking()
                 .ToArray();
 
             bool dbIsDirty = false;
-            foreach (SubscriptionEntity subscription in dbContext.Subscriptions)
+            foreach (SubscriptionEntity subscription in dbContext.Subscriptions.Include(s => s.PerformanceFilter))
             {
                 var filter = subscription.PerformanceFilter;
 
